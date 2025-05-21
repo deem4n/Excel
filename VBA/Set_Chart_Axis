@@ -1,3 +1,10 @@
+' sheetName: Имя листа, содержащего диаграмму.
+' chartObjectName: Имя объекта диаграммы (например, "Chart 1").
+' scaleType: Тип шкалы. Возможные значения: "Max", "Min", "Cross".
+' axisType: Тип оси. Возможные значения: "Value" (или "Y"), "Category" (или "X").
+' axisGroup: Группа оси. Возможные значения: "Primary", "Secondary".
+' scaleValue: Значение шкалы или "Auto" для автоматического режима.
+
 Function SetChartAxis(sheetName As String, chartObjectName As String, scaleType As String, _
                       axisType As String, axisGroup As String, scaleValue As Variant)
 
