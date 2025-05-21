@@ -105,6 +105,6 @@ Function SetChartAxis(sheetName As String, chartObjectName As String, scaleType 
 
     ' Возвращение текстовой строки, отображающей установленное значение
     SetChartAxis = axisType & " " & axisGroup & " " _
-                   & scaleType & ": " & scaleValueText
+                   & scaleType & scaleValueText
 
 End Function
