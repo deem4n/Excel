@@ -1,4 +1,4 @@
-// =Table.AddColumn(ТАБЛИЦА, "Номер недели (ISO)", each GetISOWeekNumber([ДАТА_СТОЛБЕЦ]))
+// =Table.AddColumn(ТАБЛИЦА, "Номер недели (ISO)", each GetISOWeekNumber([СТОЛБЕЦ_ДАТЫ]))
 
 (dateInput as any) as number =>
 let
