@@ -1,0 +1,23 @@
+let
+    api_key = "",
+    url = "",
+
+    // Шапка запроса
+    headers = [
+        #"accept" = "application/json",
+        #"apikey" = api_key,
+        #"Content-Type" = "application/json"
+    ],
+
+    // Тело запроса JSON
+    body = "",
+
+    response = Web.Contents(url & "?apikey=" & api_key, [Headers = headers, Content = Text.ToBinary(body)]),
+
+    // Результат запроса по API
+    json = Json.Document(response),
+
+    objects = Json[objects],
+    Source = Table.FromList(objects, Splitter.SplitByNothing(), null, null, ExtraValues.Error)
+in
+    Source
