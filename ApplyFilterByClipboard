@@ -1,1 +1,107 @@
+Sub ApplyFilterFromClipboard()
+    ' Применение фильтра на основе данных из буфера обмена для выбранной ячейки (сводная таблица или обычный массив)
 
+    Dim clipboardData As MSForms.DataObject
+    Dim clipboardText As String
+    Dim filterValues() As String
+    Dim selectedCell As Range
+    Dim pivotTable As pivotTable
+    Dim pivotField As pivotField
+    Dim pivotItem As pivotItem
+    Dim arrayRange As Range
+    Dim fieldIndex As Integer
+    Dim matchFound As Boolean
+
+    ' Отключаем обновление экрана и события для повышения производительности
+    Application.ScreenUpdating = False
+    Application.EnableEvents = False
+
+    ' Получаем текст из буфера обмена
+    Set clipboardData = New MSForms.DataObject
+    On Error Resume Next
+    clipboardData.GetFromClipboard
+    clipboardText = clipboardData.GetText
+    On Error GoTo 0
+
+    ' Проверяем, если буфер обмена пуст
+    If clipboardText = vbNullString Then GoTo Cleanup
+
+    ' Обрабатываем текст из буфера обмена и создаем массив значений для фильтра
+    clipboardText = Replace(clipboardText, Chr(13), "-")
+    clipboardText = Trim(WorksheetFunction.Clean(clipboardText))
+    filterValues = Split(clipboardText, "-")
+    ReDim Preserve filterValues(UBound(filterValues) - 1)
+
+    ' Если массив пустой, завершаем выполнение
+    If UBound(filterValues) < 0 Then GoTo Cleanup
+
+    ' Определяем выбранную ячейку (берем самую верхнюю левую из выделенного диапазона)
+    Set selectedCell = Selection.Cells(1, 1)
+
+    ' Проверяем, является ли выбранная ячейка частью сводной таблицы
+    On Error Resume Next
+    Set pivotTable = selectedCell.pivotTable
+    On Error GoTo 0
+
+    If Not pivotTable Is Nothing Then
+        ' Определяем поле сводной таблицы
+        On Error Resume Next
+        Set pivotField = selectedCell.pivotField
+        On Error GoTo 0
+
+        If Not pivotField Is Nothing Then
+            ' Применяем фильтр к сводной таблице
+            With pivotField
+                .Parent.ManualUpdate = True ' Отключаем автоматическое обновление сводной таблицы
+                .ClearAllFilters ' Сбрасываем все фильтры
+
+                matchFound = False
+                ' Проверяем, есть ли совпадения между значениями из буфера и элементами сводной таблицы
+                For Each pivotItem In .PivotItems
+                    If Not IsError(Application.Match(pivotItem.Name, filterValues, 0)) Then
+                        matchFound = True
+                        Exit For
+                    End If
+                Next pivotItem
+
+                ' Если совпадений нет, не применяем фильтр
+                If Not matchFound Then
+                    .ClearAllFilters
+                Else
+                    ' Применяем фильтр только к совпадающим элементам
+                    For Each pivotItem In .PivotItems
+                        If Not IsError(Application.Match(pivotItem.Name, filterValues, 0)) Then
+                            pivotItem.Visible = True
+                        Else
+                            pivotItem.Visible = False
+                        End If
+                    Next pivotItem
+                End If
+
+                .Parent.ManualUpdate = False ' Включаем автоматическое обновление сводной таблицы
+            End With
+        End If
+
+        GoTo Cleanup
+    End If
+
+    ' Если не сводная таблица, продолжаем с обычным массивом данных
+    On Error Resume Next
+    Set arrayRange = selectedCell.CurrentRegion
+    On Error GoTo 0
+
+    If arrayRange Is Nothing Then GoTo Cleanup
+
+    ' Вычисляем относительный номер столбца (fieldIndex) относительно массива
+    fieldIndex = selectedCell.Column - arrayRange.Columns(1).Column + 1
+
+    ' Применяем фильтр
+    On Error Resume Next
+    arrayRange.AutoFilter Field:=fieldIndex, Criteria1:=filterValues, Operator:=xlFilterValues
+    On Error GoTo 0
+
+Cleanup:
+    ' Включаем обновление экрана и событий
+    Application.ScreenUpdating = True
+    Application.EnableEvents = True
+End Sub
