@@ -1,56 +1,63 @@
 Sub SaveAsCsv()
-Dim wb As Workbook
-Dim sh As Worksheet
-Dim myPath As String
-Dim myFile As String
-Dim myExtension As String
-Dim FldrPicker As FileDialog
-'Optimize Macro Speed
-  Application.ScreenUpdating = False
-  Application.EnableEvents = False
-  Application.Calculation = xlCalculationManual
+    Dim wb As Workbook
+    Dim sh As Worksheet
+    Dim myPath As String
+    Dim myFile As String
+    Dim myExtension As String
+    Dim FldrPicker As FileDialog
 
-'Retrieve Target Folder Path From User
-  Set FldrPicker = Application.FileDialog(msoFileDialogFolderPicker)
-  
-        Application.StatusBar = "Выбор папки..."
+    ' Оптимизация скорости выполнения макроса
+    Application.ScreenUpdating = False
+    Application.EnableEvents = False
+    Application.Calculation = xlCalculationManual
+
+    ' Получение пути к папке от пользователя
+    Set FldrPicker = Application.FileDialog(msoFileDialogFolderPicker)
+    
+    Application.StatusBar = "Выбор папки..."
 
     With FldrPicker
-      .Title = "Выберите папку с файлами для конвертации"
-      .AllowMultiSelect = False
+        .Title = "Выберите папку с файлами для конвертации"
+        .AllowMultiSelect = False
         If .Show <> -1 Then GoTo NextCode
         myPath = .SelectedItems(1) & "\"
     End With
 
-        
-
-'In Case of Cancel
+    ' В случае отмены
 NextCode:
     Application.StatusBar = False
-  myPath = myPath
-  If myPath = "" Then Exit Sub
+    myPath = myPath
+    If myPath = "" Then Exit Sub
 
-'Target File Extension (must include wildcard "*")
-  myExtension = "*.xls*"
+    ' Целевое расширение файлов (должно включать шаблон "*")
+    myExtension = "*.xls*"
 
-'Target Path with Ending Extention
-  myFile = Dir(myPath & myExtension)
+    ' Путь к целевым файлам с указанным расширением
+    myFile = Dir(myPath & myExtension)
 
-'Loop through each Excel file in folder
-  Do While myFile <> ""
-    Application.StatusBar = "Конвертирую " & myFile & "..."
-    'Set variable equal to opened workbook
-    Set wb = Workbooks.Open(Filename:=myPath & myFile)
-    nameWb = myPath & Left(myFile, InStr(1, myFile, ".") - 1) & ".csv"
-    ActiveWorkbook.SaveAs Filename:=nameWb, FileFormat:=xlCSV, local:=True
-    ActiveWorkbook.Close savechanges:=False
-    Application.StatusBar = False
-    'Get next file name
-      myFile = Dir
-  Loop
-'Reset Macro Optimization Settings
-  Application.ScreenUpdating = True
-  Application.EnableEvents = True
-  Application.Calculation = xlCalculationAutomatic
-  
+    ' Цикл по каждому Excel-файлу в папке
+    Do While myFile <> ""
+        Application.StatusBar = "Конвертирую " & myFile & "..."
+        
+        ' Установка переменной для открытого файла
+        Set wb = Workbooks.Open(Filename:=myPath & myFile)
+        
+        ' Формирование имени выходного файла
+        nameWb = myPath & Left(myFile, InStr(1, myFile, ".") - 1) & ".csv"
+        
+        ' Сохранение файла в формате CSV
+        ActiveWorkbook.SaveAs Filename:=nameWb, FileFormat:=xlCSV, Local:=True
+        
+        ' Закрытие файла без сохранения изменений
+        ActiveWorkbook.Close SaveChanges:=False
+        Application.StatusBar = False
+        
+        ' Получение имени следующего файла
+        myFile = Dir
+    Loop
+
+    ' Сброс настроек оптимизации макроса
+    Application.ScreenUpdating = True
+    Application.EnableEvents = True
+    Application.Calculation = xlCalculationAutomatic
 End Sub
