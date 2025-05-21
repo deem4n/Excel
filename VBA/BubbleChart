@@ -1,86 +1,103 @@
-Function setChartAxis(sheetName As String, chartName As String, MinOrMax As String, _
-    ValueOrCategory As String, PrimaryOrSecondary As String, Value As Variant)
- 
-'Create variables
-Dim cht As Chart
-Dim valueAsText As String
- 
-'Set the chart to be controlled by the function
-Set cht = Application.Caller.Parent.Parent.Sheets(sheetName) _
-    .ChartObjects(chartName).Chart
- 
-'Set Value of Primary axis
-If (ValueOrCategory = "Value" Or ValueOrCategory = "Y") _
-    And PrimaryOrSecondary = "Primary" Then
- 
-    With cht.Axes(xlValue, xlPrimary)
-        If IsNumeric(Value) = True Then
-            If MinOrMax = "Max" Then .MaximumScale = Value
-            If MinOrMax = "Min" Then .MinimumScale = Value
-            If MinOrMax = "Cross" Then .CrossesAt = Value
-        Else
-            If MinOrMax = "Max" Then .MaximumScaleIsAuto = True
-            If MinOrMax = "Min" Then .MinimumScaleIsAuto = True
-            If MinOrMax = "Cross" Then .CrossesAtIsAuto = True
-        End If
-    End With
-End If
- 
-'Set Category of Primary axis
-If (ValueOrCategory = "Category" Or ValueOrCategory = "X") _
-    And PrimaryOrSecondary = "Primary" Then
- 
-    With cht.Axes(xlCategory, xlPrimary)
-        If IsNumeric(Value) = True Then
-            If MinOrMax = "Max" Then .MaximumScale = Value
-            If MinOrMax = "Min" Then .MinimumScale = Value
-            If MinOrMax = "Cross" Then .CrossesAt = Value
-        Else
-            If MinOrMax = "Max" Then .MaximumScaleIsAuto = True
-            If MinOrMax = "Min" Then .MinimumScaleIsAuto = True
-            If MinOrMax = "Cross" Then .CrossesAtIsAuto = True
-        End If
-    End With
-End If
- 
-'Set value of secondary axis
-If (ValueOrCategory = "Value" Or ValueOrCategory = "Y") _
-    And PrimaryOrSecondary = "Secondary" Then
- 
-    With cht.Axes(xlValue, xlSecondary)
-        If IsNumeric(Value) = True Then
-            If MinOrMax = "Max" Then .MaximumScale = Value
-            If MinOrMax = "Min" Then .MinimumScale = Value
-            If MinOrMax = "Cross" Then .CrossesAt = Value
-        Else
-            If MinOrMax = "Max" Then .MaximumScaleIsAuto = True
-            If MinOrMax = "Min" Then .MinimumScaleIsAuto = True
-            If MinOrMax = "Cross" Then .CrossesAtIsAuto = True
-        End If
-    End With
-End If
- 
-'Set category of secondary axis
-If (ValueOrCategory = "Category" Or ValueOrCategory = "X") _
-    And PrimaryOrSecondary = "Secondary" Then
-    With cht.Axes(xlCategory, xlSecondary)
-        If IsNumeric(Value) = True Then
-            If MinOrMax = "Max" Then .MaximumScale = Value
-            If MinOrMax = "Min" Then .MinimumScale = Value
-            If MinOrMax = "Cross" Then .CrossesAt = Value
-        Else
-            If MinOrMax = "Max" Then .MaximumScaleIsAuto = True
-            If MinOrMax = "Min" Then .MinimumScaleIsAuto = True
-            If MinOrMax = "Cross" Then .CrossesAtIsAuto = True
-        End If
-    End With
-End If
- 
-'If is text always display "Auto"
-If IsNumeric(Value) Then valueAsText = Value Else valueAsText = "Auto"
- 
-'Output a text string to indicate the value
-setChartAxis = ValueOrCategory & " " & PrimaryOrSecondary & " " _
-    & MinOrMax & ": " & valueAsText
- 
+Function SetChartAxis(sheetName As String, chartObjectName As String, scaleType As String, _
+                      axisType As String, axisGroup As String, scaleValue As Variant)
+
+    ' Объявление переменных
+    Dim chartObj As Chart  ' Объект диаграммы
+    Dim scaleValueText As String  ' Строковое представление значения шкалы
+
+    ' Установка объекта диаграммы, который будет управляться функцией
+    Set chartObj = Application.Caller.Parent.Parent.Sheets(sheetName) _
+                   .ChartObjects(chartObjectName).Chart
+
+    ' Установка значений для первичной оси (числовая ось Y)
+    If (axisType = "Value" Or axisType = "Y") _
+       And axisGroup = "Primary" Then
+
+        With chartObj.Axes(xlValue, xlPrimary)
+            ' Проверка, является ли значение числовым
+            If IsNumeric(scaleValue) = True Then
+                ' Установка максимального, минимального значения или точки пересечения
+                If scaleType = "Max" Then .MaximumScale = scaleValue
+                If scaleType = "Min" Then .MinimumScale = scaleValue
+                If scaleType = "Cross" Then .CrossesAt = scaleValue
+            Else
+                ' Установка автоматического масштаба, если значение не числовое
+                If scaleType = "Max" Then .MaximumScaleIsAuto = True
+                If scaleType = "Min" Then .MinimumScaleIsAuto = True
+                If scaleType = "Cross" Then .CrossesAtIsAuto = True
+            End If
+        End With
+    End If
+
+    ' Установка значений для первичной оси (категорийная ось X)
+    If (axisType = "Category" Or axisType = "X") _
+       And axisGroup = "Primary" Then
+
+        With chartObj.Axes(xlCategory, xlPrimary)
+            ' Проверка, является ли значение числовым
+            If IsNumeric(scaleValue) = True Then
+                ' Установка максимального, минимального значения или точки пересечения
+                If scaleType = "Max" Then .MaximumScale = scaleValue
+                If scaleType = "Min" Then .MinimumScale = scaleValue
+                If scaleType = "Cross" Then .CrossesAt = scaleValue
+            Else
+                ' Установка автоматического масштаба, если значение не числовое
+                If scaleType = "Max" Then .MaximumScaleIsAuto = True
+                If scaleType = "Min" Then .MinimumScaleIsAuto = True
+                If scaleType = "Cross" Then .CrossesAtIsAuto = True
+            End If
+        End With
+    End If
+
+    ' Установка значений для вторичной оси (числовая ось Y)
+    If (axisType = "Value" Or axisType = "Y") _
+       And axisGroup = "Secondary" Then
+
+        With chartObj.Axes(xlValue, xlSecondary)
+            ' Проверка, является ли значение числовым
+            If IsNumeric(scaleValue) = True Then
+                ' Установка максимального, минимального значения или точки пересечения
+                If scaleType = "Max" Then .MaximumScale = scaleValue
+                If scaleType = "Min" Then .MinimumScale = scaleValue
+                If scaleType = "Cross" Then .CrossesAt = scaleValue
+            Else
+                ' Установка автоматического масштаба, если значение не числовое
+                If scaleType = "Max" Then .MaximumScaleIsAuto = True
+                If scaleType = "Min" Then .MinimumScaleIsAuto = True
+                If scaleType = "Cross" Then .CrossesAtIsAuto = True
+            End If
+        End With
+    End If
+
+    ' Установка значений для вторичной оси (категорийная ось X)
+    If (axisType = "Category" Or axisType = "X") _
+       And axisGroup = "Secondary" Then
+
+        With chartObj.Axes(xlCategory, xlSecondary)
+            ' Проверка, является ли значение числовым
+            If IsNumeric(scaleValue) = True Then
+                ' Установка максимального, минимального значения или точки пересечения
+                If scaleType = "Max" Then .MaximumScale = scaleValue
+                If scaleType = "Min" Then .MinimumScale = scaleValue
+                If scaleType = "Cross" Then .CrossesAt = scaleValue
+            Else
+                ' Установка автоматического масштаба, если значение не числовое
+                If scaleType = "Max" Then .MaximumScaleIsAuto = True
+                If scaleType = "Min" Then .MinimumScaleIsAuto = True
+                If scaleType = "Cross" Then .CrossesAtIsAuto = True
+            End If
+        End With
+    End If
+
+    ' Если значение не числовое, всегда отображать "Auto"
+    If IsNumeric(scaleValue) Then
+        scaleValueText = scaleValue
+    Else
+        scaleValueText = "Auto"
+    End If
+
+    ' Возвращение текстовой строки, отображающей установленное значение
+    SetChartAxis = axisType & " " & axisGroup & " " _
+                   & scaleType & ": " & scaleValueText
+
 End Function
