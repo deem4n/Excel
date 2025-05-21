@@ -1,0 +1,13 @@
+let
+    // Указать имя сервера
+    server = "",
+
+    // Указать имя базы данных
+    database = "",
+    
+    // Вставить запрос SQL
+    sql_query = "",
+
+    Source = Value.NativeQuery(PostgreSQL.Database(server, database), sql_query, null, [EnableFolding=true])
+in
+    Source
