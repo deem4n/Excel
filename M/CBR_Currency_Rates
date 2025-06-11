@@ -1,4 +1,8 @@
 let
+    // Параметры для начальной и конечной даты
+    StartDate = "01.01.2022",
+    EndDate = DateTime.ToText(DateTime.LocalNow(), "dd.MM.yyyy"),
+
     // URL справочника валют
     СправочникURL = "https://www.cbr.ru/scripts/XML_val.asp?d=0",
 
@@ -13,7 +17,7 @@ let
     // Функция для загрузки данных по одной валюте
     ПолучитьДанные = (ИдентификаторВалюты as text, НазваниеВалюты as text) =>
         let
-            URL = "https://cbr.ru/currency_base/dynamics/?UniDbQuery.Posted=True&UniDbQuery.mode=1&UniDbQuery.date_req1=&UniDbQuery.date_req2=&UniDbQuery.VAL_NM_RQ=" & ИдентификаторВалюты & "&UniDbQuery.From=01.01.2022&UniDbQuery.To=" & DateTime.ToText(DateTime.LocalNow(), "dd.MM.yyyy"),
+            URL = "https://cbr.ru/currency_base/dynamics/?UniDbQuery.Posted=True&UniDbQuery.mode=1&UniDbQuery.date_req1=&UniDbQuery.date_req2=&UniDbQuery.VAL_NM_RQ=" & ИдентификаторВалюты & "&UniDbQuery.From=" & StartDate & "&UniDbQuery.To=" & EndDate,
             Source = try Web.Page(Web.Contents(URL)) otherwise null,
             Data = if Source <> null then Source{0}[Data] else null,
             ProcessedData = if Data <> null then
