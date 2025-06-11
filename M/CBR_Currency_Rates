@@ -1,0 +1,58 @@
+let
+    // URL справочника валют
+    СправочникURL = "https://www.cbr.ru/scripts/XML_val.asp?d=0",
+
+    // Загрузка справочника валют из XML с кодировкой 1251
+    СправочникXML = Xml.Tables(Web.Contents(СправочникURL), null, 1251),
+    Item = СправочникXML{0}[Item],
+    #"Переименованы столбцы" = Table.RenameColumns(Item, {{"Name", "Название валюты"}, {"Nominal", "Номинал"}, {"Attribute:ID", "Идентификатор"}}),
+
+    // Фильтрация валют с номиналом = "1"
+    #"Фильтр номинала" = Table.SelectRows(#"Переименованы столбцы", each Text.From([Номинал]) = "1"),
+
+    // Функция для загрузки данных по одной валюте
+    ПолучитьДанные = (ИдентификаторВалюты as text, НазваниеВалюты as text) =>
+        let
+            URL = "https://cbr.ru/currency_base/dynamics/?UniDbQuery.Posted=True&UniDbQuery.mode=1&UniDbQuery.date_req1=&UniDbQuery.date_req2=&UniDbQuery.VAL_NM_RQ=" & ИдентификаторВалюты & "&UniDbQuery.From=01.01.2022&UniDbQuery.To=" & DateTime.ToText(DateTime.LocalNow(), "dd.MM.yyyy"),
+            Source = try Web.Page(Web.Contents(URL)) otherwise null,
+            Data = if Source <> null then Source{0}[Data] else null,
+            ProcessedData = if Data <> null then
+                let
+                    #"Removed Top Rows" = Table.Skip(Data,1),
+                    #"Promoted Headers" = Table.PromoteHeaders(#"Removed Top Rows", [PromoteAllScalars=true]),
+                    #"Renamed Columns" = Table.RenameColumns(#"Promoted Headers",{{"Дата▼", "Дата"}}),
+                    #"Удален столбец Единиц" = Table.RemoveColumns(#"Renamed Columns", {"Единиц"}),
+                    #"Добавлено название валюты" = Table.AddColumn(#"Удален столбец Единиц", "Название валюты", each НазваниеВалюты)
+                in
+                    #"Добавлено название валюты"
+            else
+                null
+        in
+            ProcessedData,
+
+    // Применение функции ко всем валютам из справочника
+    Результаты = List.Transform(
+        Table.ToRecords(#"Фильтр номинала"), // Преобразование отфильтрованного справочника в список записей
+        (Валюта) =>
+            try ПолучитьДанные(Валюта[Идентификатор], Валюта[Название валюты]) otherwise null
+    ),
+
+    // Удаление null значений из списка
+    РезультатыБезNull = List.RemoveNulls(Результаты),
+
+    // Объединение таблиц
+    ОбъединенныеДанные = if List.Count(РезультатыБезNull) > 0 then Table.Combine(РезультатыБезNull) else #table({}, {}),
+
+    // Преобразование типов в конце
+    #"Изменение типов столбцов" = Table.TransformColumnTypes(ОбъединенныеДанные, {{"Дата", type date}, {"Курс", type number}, {"Название валюты", type text}}),
+
+    // Разнесение Название валюты на отдельные столбцы
+    #"Преобразование в формат с валютами в столбцах" = Table.Pivot(
+        #"Изменение типов столбцов",
+        List.Distinct(#"Изменение типов столбцов"[Название валюты]), // Список уникальных валют для столбцов
+        "Название валюты",
+        "Курс",
+        List.Sum // При необходимости суммировать значения (если есть дубли)
+    )
+in
+    #"Преобразование в формат с валютами в столбцах"
